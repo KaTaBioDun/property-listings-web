@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { TYPES, TYPE_LABEL, btnPrimary, btnQuiet, field } from "../lib/format";
+import { TYPES, TYPE_LABEL, btnPrimary, btnQuiet, field, fieldBase } from "../lib/format";
+import Select from "./Select";
 
 export default function ListingForm({ initial, onSave, onCancel }) {
   const [v, setV] = useState({
@@ -58,16 +59,16 @@ export default function ListingForm({ initial, onSave, onCancel }) {
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label htmlFor="type" className="mb-1 block text-sm font-medium">Type</label>
-          <select id="type" value={v.type} onChange={set("type")} className={field}>
+          <Select id="type" value={v.type} onChange={set("type")} className={`${fieldBase} w-full rounded-xl pl-3.5`}>
             {TYPES.map((t) => <option key={t} value={t}>{TYPE_LABEL[t]}</option>)}
-          </select>
+          </Select>
         </div>
         <div>
           <label htmlFor="status" className="mb-1 block text-sm font-medium">Status</label>
-          <select id="status" value={v.status} onChange={set("status")} className={field}>
+          <Select id="status" value={v.status} onChange={set("status")} className={`${fieldBase} w-full rounded-xl pl-3.5`}>
             <option value="available">Available</option>
             <option value="sold">Sold</option>
-          </select>
+          </Select>
         </div>
       </div>
       {submitError && <p role="alert" className="text-sm text-danger">{submitError}</p>}

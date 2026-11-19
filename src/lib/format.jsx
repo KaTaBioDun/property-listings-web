@@ -1,7 +1,7 @@
 export const TYPES = ["land", "building", "rental"];
 export const TYPE_LABEL = { land: "Land", building: "Building", rental: "Rental" };
 export const money = new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", maximumFractionDigits: 0 });
-export const compact = new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", notation: "compact", maximumFractionDigits: 1 });
+export const compact = new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", notation: "compact", minimumFractionDigits: 0, maximumFractionDigits: 1 });
 export const dateFmt = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric" });
 
 export const btn = "inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold transition-colors disabled:pointer-events-none disabled:opacity-50";

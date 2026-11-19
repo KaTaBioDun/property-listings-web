@@ -5,7 +5,7 @@ export default function ListingCard({ item, busy, onEdit, onToggle, onDelete }) 
   const sold = item.status === "sold";
   return (
     <li className="flex w-full flex-col rounded-[20px] border border-line bg-card p-2 sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]">
-      <div className="relative aspect-[16/10] overflow-hidden rounded-[14px] bg-mint">
+      <div className="relative aspect-16/10 overflow-hidden rounded-[14px] bg-mint">
         <div className={`h-full w-full ${sold ? "opacity-50 grayscale" : ""}`}>
           <Plan type={item.type} />
         </div>
