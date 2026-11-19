@@ -1,3 +1,4 @@
+/* Native select with the browser arrow replaced by a chevron that has proper spacing. */
 export default function Select({ className = "", children, ...props }) {
   return (
     <div className="relative">
