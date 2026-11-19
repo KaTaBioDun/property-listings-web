@@ -5,6 +5,22 @@ import ListingCard from "./components/ListingCard";
 import ListingForm from "./components/ListingForm";
 import Modal from "./components/Modal";
 import Segmented from "./components/Segmented";
+import Select from "./components/Select";
+
+const intro = "Land, buildings and rentals in one place.";
+
+// One plain sentence for the page header, worded for each situation.
+function summarize({ total, available, value }) {
+  if (total === 0) return intro;
+  if (available === 0) {
+    return total === 1 ? "Your only listing has been sold." : `All ${total} listings have been sold.`;
+  }
+  const worth = `worth ${compact.format(value)}`;
+  if (available === total) {
+    return total === 1 ? `Your only listing is available, ${worth}.` : `All ${total} listings are available, ${worth}.`;
+  }
+  return `${available} of ${total} listings are available, ${worth}.`;
+}
 
 const cardSize = "w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]";
 
@@ -116,7 +132,7 @@ export default function App() {
                 <path d="M4 11 12 4l8 7M6 10v10h12V10" />
               </svg>
             </span>
-            <span className="font-display text-lg font-semibold">Listings</span>
+            <span className="font-display text-lg font-semibold">Procuratio</span>
           </div>
           <button onClick={() => setEditing({})} className={btnPrimary}>New listing</button>
         </div>
@@ -125,9 +141,7 @@ export default function App() {
       <header className="mx-auto max-w-3xl px-5 pb-8 pt-14 text-center">
         <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">Property listings</h1>
         <p className="mx-auto mt-3 max-w-lg text-lg text-muted">
-          {phase === "ready" && stats.total > 0
-            ? `${stats.available} of ${stats.total} listings are available, worth ${compact.format(stats.value)}.`
-            : "Land, buildings and rentals in one place."}
+          {phase === "ready" ? summarize(stats) : intro}
         </p>
 
         {phase === "ready" && listings.length > 0 && (
@@ -150,11 +164,11 @@ export default function App() {
                 options={[["all", "All types"], ...TYPES.map((t) => [t, TYPE_LABEL[t]])]} />
               <Segmented label="Status" value={status} onChange={setStatus}
                 options={[["all", "Any status"], ["available", "Available"], ["sold", "Sold"]]} />
-              <select value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort listings" className={`${fieldBase} rounded-full px-4`}>
+              <Select value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort listings" className={`${fieldBase} rounded-full pl-4`}>
                 <option value="newest">Newest first</option>
                 <option value="low">Price, low to high</option>
                 <option value="high">Price, high to low</option>
-              </select>
+              </Select>
             </div>
           </div>
         )}
