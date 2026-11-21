@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { createListing, deleteListing, listListings, updateListing } from "./api";
+import { UnauthorizedError, createListing, deleteListing, listListings, updateListing } from "./api";
+import { hasSession, signOut } from "./auth";
 import { TYPES, TYPE_LABEL, btnDanger, btnPrimary, btnQuiet, compact, fieldBase } from "./lib/format";
 import ListingCard from "./components/ListingCard";
 import ListingForm from "./components/ListingForm";
+import Login from "./components/Login";
 import Modal from "./components/Modal";
 import Segmented from "./components/Segmented";
 import Select from "./components/Select";
@@ -37,6 +39,7 @@ export default function App() {
   const [deletingBusy, setDeletingBusy] = useState(false);
   const [busyId, setBusyId] = useState(null);
   const [toast, setToast] = useState(null);
+  const [signedIn, setSignedIn] = useState(hasSession);
 
   const notify = useCallback((text, kind = "ok") => setToast({ text, kind, id: Date.now() }), []);
   useEffect(() => {
@@ -51,23 +54,42 @@ export default function App() {
       setListings(await listListings());
       setPhase("ready");
     } catch (e) {
+      if (e instanceof UnauthorizedError) {
+        setSignedIn(false);
+        return;
+      }
       setError(e.message);
       setPhase("error");
     }
   }, []);
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { if (signedIn) load(); }, [signedIn, load]);
+
+  function leave() {
+    signOut();
+    setListings([]);
+    setPhase("loading");
+    setSignedIn(false);
+  }
 
   async function save(values) {
-    if (editing?.listingId) {
-      const updated = await updateListing(editing.listingId, values);
-      setListings((l) => l.map((x) => (x.listingId === updated.listingId ? updated : x)));
-      notify("Listing updated");
-    } else {
-      const created = await createListing(values);
-      setListings((l) => [created, ...l]);
-      notify("Listing created");
+    try {
+      if (editing?.listingId) {
+        const updated = await updateListing(editing.listingId, values);
+        setListings((l) => l.map((x) => (x.listingId === updated.listingId ? updated : x)));
+        notify("Listing updated");
+      } else {
+        const created = await createListing(values);
+        setListings((l) => [created, ...l]);
+        notify("Listing created");
+      }
+      setEditing(null);
+    } catch (e) {
+      if (e instanceof UnauthorizedError) {
+        setEditing(null);
+        leave();
+      }
+      throw e;
     }
-    setEditing(null);
   }
 
   async function toggle(item) {
@@ -78,7 +100,8 @@ export default function App() {
       setListings((l) => l.map((x) => (x.listingId === updated.listingId ? updated : x)));
       notify(next === "sold" ? "Listing marked as sold" : "Listing reopened");
     } catch (e) {
-      notify(e.message, "error");
+      if (e instanceof UnauthorizedError) leave();
+      else notify(e.message, "error");
     } finally {
       setBusyId(null);
     }
@@ -92,7 +115,10 @@ export default function App() {
       notify("Listing deleted");
       setDeleting(null);
     } catch (e) {
-      notify(e.message, "error");
+      if (e instanceof UnauthorizedError) {
+        setDeleting(null);
+        leave();
+      } else notify(e.message, "error");
     } finally {
       setDeletingBusy(false);
     }
@@ -119,6 +145,8 @@ export default function App() {
     return rows.sort(order[sort]);
   }, [listings, query, type, status, sort]);
 
+  if (!signedIn) return <Login onSignedIn={() => setSignedIn(true)} />;
+
   const clearFilters = () => { setQuery(""); setType("all"); setStatus("all"); };
   const panel = "rounded-3xl border border-dashed border-line bg-card p-12 text-center";
 
@@ -134,7 +162,10 @@ export default function App() {
             </span>
             <span className="font-display text-lg font-semibold">Procuratio</span>
           </div>
-          <button onClick={() => setEditing({})} className={btnPrimary}>New listing</button>
+          <div className="flex items-center gap-2">
+            <button onClick={leave} className={btnQuiet}>Sign out</button>
+            <button onClick={() => setEditing({})} className={btnPrimary}>New listing</button>
+          </div>
         </div>
       </nav>
 
